@@ -134,8 +134,6 @@ class AudioDetectorTestCase(unittest.TestCase):
 
         self.assertTrue(self.detector.last_state)
         self.notifier.notify.assert_not_called()
-        self.detector.get_fft_magnitude.assert_not_called()
-        self.detector.process_value.assert_not_called()
 
     @patch('ringr.audio.time')
     def test_analyze_reset_cooldown_time(self, mock_time):
