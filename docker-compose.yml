@@ -1,0 +1,23 @@
+version: '3'
+services:
+  ringr:
+    container_name: ringr
+    image: ringr:latest
+    devices:
+      - '/dev/snd:/dev/snd'
+    environment:
+      TZ: 'Europe/Madrid'
+      PUID: '1000'
+      GUID: '1000'
+      RINGR_DETECTOR_THRESHOLD: '65'
+      RINGR_DETECTOR_PEAK_DURATION: '0.8'
+      RINGR_DETECTOR_FREQUENCY: '1000'
+      RINGR_DETECTOR_ACCEPTANCE_RATIO: '90'
+      RINGR_DETECTOR_GAIN: '200'
+      RINGR_DETECTOR_LATENCY: '0.1'
+      RINGR_DETECTOR_COOLDOWN: '15'
+      RINGR_NOTIFIER_TYPE: 'ha'
+      RINGR_NOTIFIER_MQTT_HOST: '10.10.0.50'
+      RINGR_NOTIFIER_USER: 'ringr'
+      RINGR_NOTIFIER_PASS: 'secret'
+    restart: unless-stopped

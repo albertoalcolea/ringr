@@ -1,0 +1,15 @@
+[Unit]
+Description=Sound event detection system
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/ringr
+ExecStart=/opt/ringr/venv/bin/ringr
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
