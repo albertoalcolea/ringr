@@ -1,5 +1,9 @@
 # ringr
 
+[![Build Status](https://github.com/albertoalcolea/ringr/workflows/Tests/badge.svg)](https://github.com/albertoalcolea/ringr/actions?query=workflow%3ATests)
+[![Latest PyPI Version](https://img.shields.io/pypi/v/ringr.svg)](https://pypi.python.org/pypi/ringr)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/ringr.svg)](https://pypi.python.org/pypi/ringr)
+
 Sound event detection system based on the open-source cross-platform PortAudio API.
 
 It supports multiple notification backends, and it has been designed to run on low-specs and inexpensive hardware like the lowest range of raspberry products (RPi 1, RPi Zero, RPi Zero 2, etc).
