@@ -36,7 +36,7 @@ setup(
     project_urls={
         'Source': 'https://github.com/albertoalcolea/ringr'
     },
-    license='MIT',
+    license='GNU General Public License v3 (GPLv3)',
     keywords=[
         'ringr',
         'ring',
