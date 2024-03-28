@@ -9,6 +9,7 @@ services:
       TZ: 'Europe/Madrid'
       PUID: '1000'
       GUID: '1000'
+      RINGR_DETECTOR_DEVICE: '1'
       RINGR_DETECTOR_THRESHOLD: '65'
       RINGR_DETECTOR_PEAK_DURATION: '0.8'
       RINGR_DETECTOR_FREQUENCY: '1000'
