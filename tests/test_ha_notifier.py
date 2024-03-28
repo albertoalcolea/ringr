@@ -1,7 +1,13 @@
 import unittest
 from unittest.mock import Mock, patch
 
+import logging
+
 from ringr.notifiers.ha_notifier import HANotifier, HANotifierConfig
+
+
+# Don't show logging messages while testing
+logging.disable(logging.CRITICAL)
 
 
 class HANotifierTestCase(unittest.TestCase):

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from ringr.notifiers.notifier import Notifier, NotifierConfig
 from ringr.config_parser import EnvConfigParser
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('ringr')
 
 
 @dataclass(frozen=True)

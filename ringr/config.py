@@ -9,7 +9,7 @@ from .config_parser import EnvConfigParser
 from .notifiers import parse_notifier_config, NotifierConfig
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('ringr')
 
 
 @dataclass(frozen=True)

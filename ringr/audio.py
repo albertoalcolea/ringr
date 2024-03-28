@@ -11,7 +11,7 @@ from .config import DetectorConfig
 from .notifiers import Notifier
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('ringr')
 
 
 class SlidingWindow:

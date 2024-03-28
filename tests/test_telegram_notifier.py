@@ -1,7 +1,13 @@
 import unittest
 from unittest.mock import patch
 
+import logging
+
 from ringr.notifiers.telegram_notifier import TelegramNotifier, TelegramNotifierConfig
+
+
+# Don't show logging messages while testing
+logging.disable(logging.CRITICAL)
 
 
 class TelegramNotifierTestCase(unittest.TestCase):

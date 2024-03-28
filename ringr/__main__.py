@@ -8,7 +8,7 @@ from .notifiers import create_notifier
 from .audio import AudioDetector
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('ringr')
 
 
 DEFAULT_CONFIG_FILE = '/etc/ringr/ringr.conf'
