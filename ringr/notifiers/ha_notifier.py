@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class HANotifierConfig(NotifierConfig):
     mqtt_host: str
-    mqtt_port: int = 1886
+    mqtt_port: int = 1883
     mqtt_user: Optional[str] = None
     mqtt_pass: Optional[str] = None
     mqtt_client_id: str = 'ringr_01'

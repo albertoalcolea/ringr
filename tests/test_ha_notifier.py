@@ -77,7 +77,7 @@ class HANotifierTestCase(unittest.TestCase):
                             '"device": {"name": "ringr 01", "identifiers": ["ringr_01"]}, '
                             '"manufacturer": "Alberto Alcolea", '
                             '"model": "ringr", '
-                            '"sw_version": "0.1.2", '
+                            '"sw_version": "0.1.3", '
                             '"device_class": "sound", '
                             '"state_topic": "homeassistant/binary_sensor/ringr_01/state", '
                             '"value_template": "{{ value_json.state }}"}')

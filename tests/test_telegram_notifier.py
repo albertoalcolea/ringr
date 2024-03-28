@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch
 
-
 from ringr.notifiers.telegram_notifier import TelegramNotifier, TelegramNotifierConfig
 
 

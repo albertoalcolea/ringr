@@ -1,6 +1,6 @@
 import re
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 PACKAGE_NAME = 'ringr'
@@ -48,7 +48,7 @@ setup(
         'peak detection',
         'home assistant',
     ],
-    packages=[PACKAGE_NAME],
+    packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=requires,
     entry_points={
         'console_scripts': [

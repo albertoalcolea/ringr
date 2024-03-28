@@ -15,30 +15,30 @@ log = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class DetectorConfig:
     device: int
-    cooldown_secs: float
     threshold: float
     peak_duration: float
     frequency: int
-    block_duration: int
-    acceptance_ratio: float = 100
     num_freq_bins: int = 256
+    acceptance_ratio: float = 100
     gain: int = 0
     latency: Optional[float] = None
+    cooldown_secs: float = 10
+    block_duration: int = 50
     log_analysis: bool = False
 
     @classmethod
     def configure(cls, conf: EnvConfigParser):
         return cls(
             device=conf.getint('detector', 'device'),
-            cooldown_secs=conf.getfloat('detector', 'cooldown'),
             threshold=conf.getfloat('detector', 'threshold'),
             peak_duration=conf.getfloat('detector', 'peak_duration'),
             frequency=conf.getint('detector', 'frequency'),
-            block_duration=conf.getint('detector', 'block_duration'),
-            acceptance_ratio=conf.getfloat('detector', 'acceptance_ratio', fallback=cls.acceptance_ratio),
             num_freq_bins=conf.getint('detector', 'frequency_bins', fallback=cls.num_freq_bins),
+            acceptance_ratio=conf.getfloat('detector', 'acceptance_ratio', fallback=cls.acceptance_ratio),
             gain=conf.getint('detector', 'gain', fallback=cls.gain),
             latency=conf.getfloat('detector', 'latency', fallback=cls.latency),
+            cooldown_secs=conf.getfloat('detector', 'cooldown', fallback=cls.cooldown_secs),
+            block_duration=conf.getint('detector', 'block_duration', fallback=cls.block_duration),
             log_analysis=conf.getboolean('detector', 'log_analysis', fallback=cls.log_analysis),
         )
 

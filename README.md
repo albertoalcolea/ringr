@@ -65,6 +65,7 @@ docker run -d \
   -e TZ=Europe/Madrid \
   -e PUID=1000 \
   -e GUID=1000 \
+  -e RINGR_DETECTOR_DEVICE='1' \
   -e RINGR_DETECTOR_THRESHOLD='65' \
   -e RINGR_DETECTOR_PEAK_DURATION='0.8' \
   -e RINGR_DETECTOR_FREQUENCY='1000' \
@@ -96,6 +97,7 @@ services:
       TZ: 'Europe/Madrid'
       PUID: '1000'
       GUID: '1000'
+      RINGR_DETECTOR_DEVICE: '1'
       RINGR_DETECTOR_THRESHOLD: '65'
       RINGR_DETECTOR_PEAK_DURATION: '0.8'
       RINGR_DETECTOR_FREQUENCY: '1000'
@@ -297,6 +299,7 @@ Configuration file:
 
 ```python
 [detector]
+device: 1
 threshold: 65
 peak_duration: 0.8
 frequency: 1000
@@ -315,6 +318,7 @@ mqtt_pass: secret
 Or, by using environment variables:
 
 ```bash
+RINGR_DETECTOR_DEVICE='1'
 RINGR_DETECTOR_THRESHOLD='65'
 RINGR_DETECTOR_PEAK_DURATION='0.8'
 RINGR_DETECTOR_FREQUENCY='1000'
