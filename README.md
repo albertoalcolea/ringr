@@ -222,7 +222,7 @@ By default, it will use the predefined high input latency of your input sound de
 You can query that value using the following command replacing the argument in the `query_devices` method by the device index of your device:
 
 ```
-$ python -c 'import sounddevice as sd; print(sd.query_device(1))'
+$ python -c 'import sounddevice as sd; print(sd.query_devices(1))'
 {'name': 'default', 'index': 11, 'hostapi': 0, 'max_input_channels': 32, 'max_output_channels': 32, 'default_low_input_latency': 0.008684807256235827, 'default_low_output_latency': 0.008684807256235827, 'default_high_input_latency': 0.034807256235827665, 'default_high_output_latency': 0.034807256235827665, 'default_samplerate': 44100.0}
 ```
 
