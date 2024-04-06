@@ -26,6 +26,8 @@ Some of my personal requirements and constraints include:
 * It must be able to detect the intercom and doorbell notification sounds without false positives warnings.
 * It must notify states to my personal Home Assistant installation and provide support to add more notification backends in the future.
 
+More information about the concept and design of *ringr* in [this post on my personal blog](https://albertoalcolea.com/blog/ringr-a-sound-event-detection-system/).
+
 ## Installation
 
 On all systems, install *ringr* by using `pip`:
@@ -265,7 +267,7 @@ Available notification backends:
 | Name | Type | Description |
 | --- | --- | --- |
 | Home Assistant | `ha` | Auto-discoverable MQTT device for Home Assistant |
-| Telegram | 'telegram' | Telegram Bot |
+| Telegram | `telegram` | Telegram Bot |
 
 
 #### Home Assistant
