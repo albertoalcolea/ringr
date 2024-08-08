@@ -18,7 +18,7 @@ def configure_logger(verbose: bool):
     log.setLevel(logging.DEBUG if verbose else logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler = logging.StreamHandler()
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
     log.addHandler(handler)
 
