@@ -42,8 +42,12 @@ class HANotifierConfig(NotifierConfig):
 
 
 class HANotifier(Notifier):
+    ha_status_topic = 'homeassistant/status'
+    ha_status_online = b'online'
+
     def __init__(self, config: HANotifierConfig) -> None:
         self.config = config
+        self.state = False
         self._connected_event = threading.Event()
 
         self.mqtt = paho.Client(client_id=self.config.mqtt_client_id)
@@ -52,19 +56,20 @@ class HANotifier(Notifier):
         self.mqtt.on_connect = self._on_mqtt_connect
         self.mqtt.on_disconnect = self._on_mqtt_disconnect
         self.mqtt.on_publish = self._on_mqtt_publish
+        self.mqtt.on_subscribe = self._on_mqtt_subscribe
+        self.mqtt.on_message = self._on_mqtt_message
         self.mqtt.connect(host=self.config.mqtt_host, port=self.config.mqtt_port)
         self.mqtt.loop_start()
 
         # Synchronous wait until client is connected
         self._connected_event.wait()
 
+        self._subscribe_to_ha_status()
         self._send_config()
 
     def notify(self, state: bool) -> None:
-        topic = f'homeassistant/binary_sensor/{self.config.device_id}/state'
-        payload = {'state': 'ON' if state else 'OFF'}
-        msg_info = self.mqtt.publish(topic, json.dumps(payload), retain=True, qos=self.config.mqtt_qos)
-        log.info('Notified state changed [%s]: %s', msg_info.mid, payload)
+        self.state = state
+        self._send_state()
 
     def _send_config(self) -> None:
         topic = f'homeassistant/binary_sensor/{self.config.device_id}/config'
@@ -82,8 +87,24 @@ class HANotifier(Notifier):
             'state_topic': f'homeassistant/binary_sensor/{self.config.device_id}/state',
             'value_template': '{{ value_json.state }}',
         }
-        msg_info = self.mqtt.publish(topic, json.dumps(payload), retain=True, qos=self.config.mqtt_qos)
-        log.info('Notified device config.py [%s]: %s', msg_info.mid, payload)
+        msg_info = self.mqtt.publish(topic, json.dumps(payload), qos=self.config.mqtt_qos)
+        log.info('Notified discovery device config [%s]: %s', msg_info.mid, payload)
+
+    def _send_state(self) -> None:
+        topic = f'homeassistant/binary_sensor/{self.config.device_id}/state'
+        payload = {'state': 'ON' if self.state else 'OFF'}
+        msg_info = self.mqtt.publish(topic, json.dumps(payload), qos=self.config.mqtt_qos)
+        if msg_info.rc == paho.MQTT_ERR_SUCCESS:
+            log.info('Notified state changed [%s]: %s', msg_info.mid, payload)
+        else:
+            log.error('Unable to publish MQTT message. Client is not connected')
+
+    def _subscribe_to_ha_status(self) -> None:
+        rc, mid = self.mqtt.subscribe(self.ha_status_topic)
+        if rc == paho.MQTT_ERR_SUCCESS:
+            log.debug('MQTT SUB sent [%s]: %s', mid, self.ha_status_online)
+        else:
+            log.error('Unable to subscribe to MQTT topic. Client is not connected')
 
     def _on_mqtt_connect(self, client, userdata, flags, rc):
         if rc == paho.CONNACK_ACCEPTED:
@@ -97,3 +118,12 @@ class HANotifier(Notifier):
 
     def _on_mqtt_publish(self, client, userdata, mid):
         log.debug('MQTT PUBACK received for message %s', mid)
+
+    def _on_mqtt_subscribe(self, client, userdata, mid, granted_qos):
+        log.debug('MQTT SUBACK received for message %s', mid)
+
+    def _on_mqtt_message(self, client, userdata, msg):
+        if msg.topic == self.ha_status_topic and msg.payload == b'online':
+            log.info('Home Assistant MQTT integration start detected. Resending discovery and state messages')
+            self._send_config()
+            self._send_state()

@@ -3,6 +3,8 @@ from unittest.mock import Mock, patch
 
 import logging
 
+import paho.mqtt.client as paho
+
 from ringr.notifiers.ha_notifier import HANotifier, HANotifierConfig
 
 
@@ -36,6 +38,8 @@ class HANotifierTestCase(unittest.TestCase):
         self.mock_threading.Event = Mock(return_value=self.connected_event)
 
         self.mqtt = Mock()
+        self.mqtt.subscribe = Mock(return_value=(paho.MQTT_ERR_SUCCESS, 0))
+
         self.mock_paho.Client = Mock(return_value=self.mqtt)
         self.mock_paho.CONNACK_ACCEPTED = 0
 
@@ -60,6 +64,7 @@ class HANotifierTestCase(unittest.TestCase):
         )
 
         self.mqtt = Mock()
+        self.mqtt.subscribe = Mock(return_value=(paho.MQTT_ERR_SUCCESS, 0))
         self.mock_paho.Client = Mock(return_value=self.mqtt)
 
         self.notifier = HANotifier(config)
@@ -83,12 +88,15 @@ class HANotifierTestCase(unittest.TestCase):
                             '"device": {"name": "ringr 01", "identifiers": ["ringr_01"]}, '
                             '"manufacturer": "Alberto Alcolea", '
                             '"model": "ringr", '
-                            '"sw_version": "0.1.3", '
+                            '"sw_version": "0.1.4", '
                             '"device_class": "sound", '
                             '"state_topic": "homeassistant/binary_sensor/ringr_01/state", '
                             '"value_template": "{{ value_json.state }}"}')
 
-        self.mqtt.publish.assert_called_once_with(expected_topic, expected_payload, retain=True, qos=1)
+        self.mqtt.publish.assert_called_once_with(expected_topic, expected_payload, qos=1)
+
+    def test_subscribed_to_ha_status_topic_on_connect(self):
+        self.mqtt.subscribe.assert_called_once_with('homeassistant/status')
 
     def test_notify_detected(self):
         self.notifier.notify(True)
@@ -96,7 +104,7 @@ class HANotifierTestCase(unittest.TestCase):
         expected_topic = 'homeassistant/binary_sensor/ringr_01/state'
         expected_payload = '{"state": "ON"}'
 
-        self.mqtt.publish.assert_called_with(expected_topic, expected_payload, retain=True, qos=1)
+        self.mqtt.publish.assert_called_with(expected_topic, expected_payload, qos=1)
 
     def test_notify_undetected(self):
         self.notifier.notify(False)
@@ -104,4 +112,4 @@ class HANotifierTestCase(unittest.TestCase):
         expected_topic = 'homeassistant/binary_sensor/ringr_01/state'
         expected_payload = '{"state": "OFF"}'
 
-        self.mqtt.publish.assert_called_with(expected_topic, expected_payload, retain=True, qos=1)
+        self.mqtt.publish.assert_called_with(expected_topic, expected_payload, qos=1)
