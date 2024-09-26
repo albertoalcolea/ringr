@@ -123,7 +123,7 @@ class HANotifier(Notifier):
         log.debug('MQTT SUBACK received for message %s', mid)
 
     def _on_mqtt_message(self, client, userdata, msg):
-        if msg.topic == self.ha_status_topic and msg.payload == b'online':
+        if msg.topic == self.ha_status_topic and msg.payload == self.ha_status_online:
             log.info('Home Assistant MQTT integration start detected. Resending discovery and state messages')
             self._send_config()
             self._send_state()
