@@ -36,7 +36,7 @@ On all systems, install *ringr* by using `pip`:
 pip install ringr
 ```
 
-If you install `ringr` on macOS and Windows, the PortAudio library will be installed automatically. On other platforms, you might have to install PortAudio with your package manager (the package might be called `libportaudio2` or similar).
+If you install *ringr* on macOS and Windows, the PortAudio library will be installed automatically. On other platforms, you might have to install PortAudio with your package manager (the package might be called `libportaudio2` or similar).
 
 ### Systemd
 
