@@ -5,6 +5,7 @@ import logging
 
 import paho.mqtt.client as paho
 
+from ringr import __version__
 from ringr.notifiers.ha_notifier import HANotifier, HANotifierConfig
 
 
@@ -81,35 +82,52 @@ class HANotifierTestCase(unittest.TestCase):
 
         self.connected_event.set.assert_not_called()
 
+    def test_publish_availability_on_connect(self):
+        self.notifier._on_mqtt_connect(None, None, None, 0)
+
+        expected_topic = 'homeassistant/binary_sensor/ringr_01/availability'
+        expected_payload = b'online'
+
+        self.mqtt.publish.assert_called_with(expected_topic, payload=expected_payload, qos=1, retain=True)
+
     def test_publish_discovery_config_message_on_connect(self):
         expected_topic = 'homeassistant/binary_sensor/ringr_01/config'
         expected_payload = ('{"name": "ringr_01", '
                             '"unique_id": "ringr_01", '
-                            '"device": {"name": "ringr 01", "identifiers": ["ringr_01"]}, '
+                            '"device": {'
+                            '"identifiers": ["ringr_01"], '
+                            '"name": "ringr 01", '
                             '"manufacturer": "Alberto Alcolea", '
                             '"model": "ringr", '
-                            '"sw_version": "0.1.4", '
+                            f'"sw_version": "{__version__}"'
+                            '}, '
                             '"device_class": "sound", '
                             '"state_topic": "homeassistant/binary_sensor/ringr_01/state", '
-                            '"value_template": "{{ value_json.state }}"}')
+                            '"availability_topic": "homeassistant/binary_sensor/ringr_01/availability"}')
 
-        self.mqtt.publish.assert_called_once_with(expected_topic, expected_payload, qos=1)
+        self.mqtt.publish.assert_called_once_with(expected_topic, payload=expected_payload, qos=1, retain=True)
 
     def test_subscribed_to_ha_status_topic_on_connect(self):
         self.mqtt.subscribe.assert_called_once_with('homeassistant/status')
+
+    def test_set_last_will_message(self):
+        expected_topic = 'homeassistant/binary_sensor/ringr_01/availability'
+        expected_payload = b'offline'
+
+        self.mqtt.will_set.assert_called_once_with(expected_topic, expected_payload, qos=1, retain=True)
 
     def test_notify_detected(self):
         self.notifier.notify(True)
 
         expected_topic = 'homeassistant/binary_sensor/ringr_01/state'
-        expected_payload = '{"state": "ON"}'
+        expected_payload = b'ON'
 
-        self.mqtt.publish.assert_called_with(expected_topic, expected_payload, qos=1)
+        self.mqtt.publish.assert_called_with(expected_topic, payload=expected_payload, qos=1, retain=True)
 
     def test_notify_undetected(self):
         self.notifier.notify(False)
 
         expected_topic = 'homeassistant/binary_sensor/ringr_01/state'
-        expected_payload = '{"state": "OFF"}'
+        expected_payload = b'OFF'
 
-        self.mqtt.publish.assert_called_with(expected_topic, expected_payload, qos=1)
+        self.mqtt.publish.assert_called_with(expected_topic, payload=expected_payload, qos=1, retain=True)

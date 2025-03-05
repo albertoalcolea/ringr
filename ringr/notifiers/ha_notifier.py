@@ -46,8 +46,8 @@ class HANotifier(Notifier):
     ha_status_online_payload = b'online'
     dev_online_payload = b'online'
     dev_offline_payload = b'offline'
-    dev_on_payload = b'ON'
-    dev_off_payload = b'OFF'
+    dev_detected_payload = b'ON'
+    dev_undetected_payload = b'OFF'
 
     def __init__(self, config: HANotifierConfig) -> None:
         self.config = config
@@ -99,7 +99,7 @@ class HANotifier(Notifier):
             log.info('Notified discovery device config: %s', payload)
 
     def _send_state(self) -> None:
-        payload = self.dev_on_payload if self.state else self.dev_off_payload
+        payload = self.dev_detected_payload if self.state else self.dev_undetected_payload
         if self._publish(self.state_topic, payload):
             log.info('Notified state changed: %s', str(payload))
 
