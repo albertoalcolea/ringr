@@ -101,7 +101,7 @@ class HANotifier(Notifier):
     def _send_state(self) -> None:
         payload = self.dev_detected_payload if self.state else self.dev_undetected_payload
         if self._publish(self.state_topic, payload):
-            log.info('Notified state changed: %s', str(payload))
+            log.info('Notified state changed: %s', payload.decode('UTF-8'))
 
     def _send_availability(self) -> None:
         if self._publish(self.availability_topic, self.dev_online_payload):
