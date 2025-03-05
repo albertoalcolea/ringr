@@ -3,7 +3,7 @@ import logging
 import threading
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Union, Optional
 
 import paho.mqtt.client as paho
 
@@ -107,7 +107,7 @@ class HANotifier(Notifier):
         if self._publish(self.availability_topic, self.dev_online_payload):
             log.info('Notified device available')
 
-    def _publish(self, topic: str, payload: str | bytes) -> bool:
+    def _publish(self, topic: str, payload: Union[str, bytes]) -> bool:
         msg_info = self.mqtt.publish(topic, payload=payload, qos=self.config.mqtt_qos, retain=True)
         if msg_info.rc == paho.MQTT_ERR_SUCCESS:
             log.debug('MQTT PUBLISH sent to topic %s. Message ID: %s', topic, msg_info.mid)
