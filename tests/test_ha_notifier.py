@@ -1,9 +1,10 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, call
 
 import logging
 
 import paho.mqtt.client as paho
+from paho.mqtt.client import MQTTMessage
 
 from ringr import __version__
 from ringr.notifiers.ha_notifier import HANotifier, HANotifierConfig
@@ -25,6 +26,19 @@ class HANotifierTestCase(unittest.TestCase):
         mqtt_client_id='ringr_mqtt_01',
         mqtt_qos=1
     )
+
+    config_payload = ('{"name": "ringr_01", '
+                      '"unique_id": "ringr_01", '
+                      '"device": {'
+                      '"identifiers": ["ringr_01"], '
+                      '"name": "ringr 01", '
+                      '"manufacturer": "Alberto Alcolea", '
+                      '"model": "ringr", '
+                      f'"sw_version": "{__version__}"'
+                      '}, '
+                      '"device_class": "sound", '
+                      '"state_topic": "homeassistant/binary_sensor/ringr_01/state", '
+                      '"availability_topic": "homeassistant/binary_sensor/ringr_01/availability"}')
 
     def setUp(self):
         paho_patcher = patch('ringr.notifiers.ha_notifier.paho')
@@ -92,18 +106,7 @@ class HANotifierTestCase(unittest.TestCase):
 
     def test_publish_discovery_config_message_on_connect(self):
         expected_topic = 'homeassistant/binary_sensor/ringr_01/config'
-        expected_payload = ('{"name": "ringr_01", '
-                            '"unique_id": "ringr_01", '
-                            '"device": {'
-                            '"identifiers": ["ringr_01"], '
-                            '"name": "ringr 01", '
-                            '"manufacturer": "Alberto Alcolea", '
-                            '"model": "ringr", '
-                            f'"sw_version": "{__version__}"'
-                            '}, '
-                            '"device_class": "sound", '
-                            '"state_topic": "homeassistant/binary_sensor/ringr_01/state", '
-                            '"availability_topic": "homeassistant/binary_sensor/ringr_01/availability"}')
+        expected_payload = self.config_payload
 
         self.mqtt.publish.assert_called_once_with(expected_topic, payload=expected_payload, qos=1, retain=True)
 
@@ -131,3 +134,20 @@ class HANotifierTestCase(unittest.TestCase):
         expected_payload = b'OFF'
 
         self.mqtt.publish.assert_called_with(expected_topic, payload=expected_payload, qos=1, retain=True)
+
+    def test_resend_discovery_config_message_on_ha_birth_message(self):
+        msg = MQTTMessage()
+        msg.topic = b'homeassistant/status'
+        msg.payload = b'online'
+
+        self.notifier._on_mqtt_message(None, None, msg)
+
+        expected_topic = 'homeassistant/binary_sensor/ringr_01/config'
+        expected_payload = self.config_payload
+
+        # First call sent on init
+        # Second call sent after receiving birth message from HA
+        self.mqtt.publish.assert_has_calls([
+            call(expected_topic, payload=expected_payload, qos=1, retain=True),
+            call(expected_topic, payload=expected_payload, qos=1, retain=True),
+        ])
