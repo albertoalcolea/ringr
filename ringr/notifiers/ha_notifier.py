@@ -43,12 +43,19 @@ class HANotifierConfig(NotifierConfig):
 
 class HANotifier(Notifier):
     ha_status_topic = 'homeassistant/status'
-    ha_status_online = b'online'
+    ha_status_online_payload = b'online'
+    dev_online_payload = b'online'
+    dev_offline_payload = b'offline'
+    dev_on_payload = b'ON'
+    dev_off_payload = b'OFF'
 
     def __init__(self, config: HANotifierConfig) -> None:
         self.config = config
         self.state = False
         self._connected_event = threading.Event()
+
+        self.state_topic = f'homeassistant/binary_sensor/{self.config.device_id}/state'
+        self.availability_topic = f'homeassistant/binary_sensor/{self.config.device_id}/availability'
 
         self.mqtt = paho.Client(client_id=self.config.mqtt_client_id)
         if self.config.mqtt_user and self.config.mqtt_pass:
@@ -58,13 +65,14 @@ class HANotifier(Notifier):
         self.mqtt.on_publish = self._on_mqtt_publish
         self.mqtt.on_subscribe = self._on_mqtt_subscribe
         self.mqtt.on_message = self._on_mqtt_message
+        self.mqtt.will_set(self.availability_topic, self.dev_offline_payload, qos=self.config.mqtt_qos, retain=True)
         self.mqtt.connect(host=self.config.mqtt_host, port=self.config.mqtt_port)
         self.mqtt.loop_start()
 
         # Synchronous wait until client is connected
         self._connected_event.wait()
 
-        self._subscribe_to_ha_status()
+        self._subscribe(self.ha_status_topic)
         self._send_config()
 
     def notify(self, state: bool) -> None:
@@ -77,39 +85,51 @@ class HANotifier(Notifier):
             'name': self.config.device_id,
             'unique_id': self.config.device_id,
             'device': {
+                'identifiers': [self.config.device_id],
                 'name': self.config.device_name,
-                'identifiers': [self.config.device_id]
+                'manufacturer': __author__,
+                'model': __title__,
+                'sw_version': __version__,
             },
-            'manufacturer': __author__,
-            'model': __title__,
-            'sw_version': __version__,
             'device_class': 'sound',
-            'state_topic': f'homeassistant/binary_sensor/{self.config.device_id}/state',
-            'value_template': '{{ value_json.state }}',
+            'state_topic': self.state_topic,
+            'availability_topic': self.availability_topic,
         }
-        msg_info = self.mqtt.publish(topic, json.dumps(payload), qos=self.config.mqtt_qos)
-        log.info('Notified discovery device config [%s]: %s', msg_info.mid, payload)
+        if self._publish(topic, json.dumps(payload)):
+            log.info('Notified discovery device config: %s', payload)
 
     def _send_state(self) -> None:
-        topic = f'homeassistant/binary_sensor/{self.config.device_id}/state'
-        payload = {'state': 'ON' if self.state else 'OFF'}
-        msg_info = self.mqtt.publish(topic, json.dumps(payload), qos=self.config.mqtt_qos)
-        if msg_info.rc == paho.MQTT_ERR_SUCCESS:
-            log.info('Notified state changed [%s]: %s', msg_info.mid, payload)
-        else:
-            log.error('Unable to publish MQTT message. Client is not connected')
+        payload = self.dev_on_payload if self.state else self.dev_off_payload
+        if self._publish(self.state_topic, payload):
+            log.info('Notified state changed: %s', str(payload))
 
-    def _subscribe_to_ha_status(self) -> None:
-        rc, mid = self.mqtt.subscribe(self.ha_status_topic)
-        if rc == paho.MQTT_ERR_SUCCESS:
-            log.debug('MQTT SUB sent [%s]: %s', mid, self.ha_status_online)
+    def _send_availability(self) -> None:
+        if self._publish(self.availability_topic, self.dev_online_payload):
+            log.info('Notified device available')
+
+    def _publish(self, topic: str, payload: str | bytes) -> bool:
+        msg_info = self.mqtt.publish(topic, payload=payload, qos=self.config.mqtt_qos, retain=True)
+        if msg_info.rc == paho.MQTT_ERR_SUCCESS:
+            log.debug('MQTT PUBLISH sent to topic %s. Message ID: %s', topic, msg_info.mid)
+            return True
         else:
-            log.error('Unable to subscribe to MQTT topic. Client is not connected')
+            log.error('Unable to publish MQTT message to topic %s. Client is not connected', topic)
+            return False
+
+    def _subscribe(self, topic: str) -> bool:
+        rc, mid = self.mqtt.subscribe(topic)
+        if rc == paho.MQTT_ERR_SUCCESS:
+            log.debug('MQTT SUBSCRIBE sent to topic %s. Message ID: %s', topic, mid)
+            return True
+        else:
+            log.error('Unable to subscribe to MQTT topic %s. Client is not connected', topic)
+            return False
 
     def _on_mqtt_connect(self, client, userdata, flags, rc):
         if rc == paho.CONNACK_ACCEPTED:
             log.debug('MQTT client connected. Flags: %s', flags)
             self._connected_event.set()
+            self._send_availability()
         else:
             log.error('MQTT connection error. Code: %s', rc)
 
@@ -123,7 +143,6 @@ class HANotifier(Notifier):
         log.debug('MQTT SUBACK received for message %s', mid)
 
     def _on_mqtt_message(self, client, userdata, msg):
-        if msg.topic == self.ha_status_topic and msg.payload == self.ha_status_online:
-            log.info('Home Assistant MQTT integration start detected. Resending discovery and state messages')
+        if msg.topic == self.ha_status_topic and msg.payload == self.ha_status_online_payload:
+            log.info('Home Assistant MQTT integration start detected. Resending discovery message')
             self._send_config()
-            self._send_state()
