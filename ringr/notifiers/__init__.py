@@ -1,3 +1,5 @@
+import os
+
 from typing import cast
 
 from ringr.notifiers.notifier import Notifier, NotifierConfig
@@ -17,7 +19,7 @@ __all__ = [
 
 
 def parse_notifier_config(config: EnvConfigParser):
-    notifier_type = config['notifier']['type']
+    notifier_type = get_notifier_type(config)
     if notifier_type == 'ha':
         return HANotifierConfig.configure(config)
     elif notifier_type == 'telegram':
@@ -33,3 +35,11 @@ def create_notifier(config: NotifierConfig) -> Notifier:
         return TelegramNotifier(cast(TelegramNotifierConfig, config))
     else:
         raise RingrDetectorError(f'Unsupported notifier: {config.type}')
+
+
+def get_notifier_type(config: EnvConfigParser) -> str:
+    if 'notifier' not in config or 'type' not in config['notifier']:
+        env_var = f'{EnvConfigParser.ENV_PREFIX}_NOTIFIER_TYPE'
+        return os.environ.get(env_var)
+    else:
+        return config['notifier']['type']
