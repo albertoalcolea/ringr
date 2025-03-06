@@ -10,6 +10,6 @@ RUN python -m pip install --upgrade pip
 
 COPY . .
 
-RUN python -m pip install -e .
+RUN python -m pip install .
 
-CMD ["python", "ringr"]
+CMD ["ringr"]
