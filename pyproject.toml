@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ringr"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+description = "Sound event detection system"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "GNU General Public License v3 (GPLv3)"}
+authors = [
+    {name = "Alberto Alcolea", email = "albertoalcolea@gmail.com"}
+]
+keywords = [
+    "ringr",
+    "ring",
+    "sound",
+    "sound detection",
+    "audio",
+    "audio detection",
+    "frequency analyzer",
+    "peak detection",
+    "home assistant",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+
+[project.urls]
+source = "https://github.com/albertoalcolea/ringr"
+changelog = "https://github.com/albertoalcolea/ringr/releases"
+issues = "https://github.com/albertoalcolea/ringr/issues"
+documentation = "https://albertoalcolea.com/blog/ringr-a-sound-event-detection-system/"
+
+[project.scripts]
+ringr = "ringr.__main__:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "ringr.__version__"}
+dependencies = {file = "requirements.txt"}
+optional-dependencies = {dev = {file = "requirements-dev.txt"}}
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*"]
