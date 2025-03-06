@@ -1,2 +1,3 @@
 flake8>=4.0.1
+build>=1.2.2.post1
 twine>=4.0.0
